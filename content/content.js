@@ -33,6 +33,7 @@
   let names = new Map();
   const articles = new Map();  // article -> {screen_name, quoteScreenName?}
   const queue = [];            // deduped FIFO of screen_name_lc, cap 200
+  const lookedUp = new Set(); // successful lookups, including unknowns, this tab
   let inFlight = false;
   let queryDead = false;
   let reqCounter = 0;
@@ -165,7 +166,7 @@
       }
       article.style.display = display;
     }
-    if (!answer && !entry) enqueue(key);
+    if (!answer && !lookedUp.has(key)) enqueue(key);
 
     let want = null; // 'flag' | 'region' | null
     if (settings.showFlags && answer) {
@@ -235,6 +236,10 @@
   // 2s sweep: re-resolve articles lacking a mark; prune disconnected entries.
   function sweep() {
     try {
+      // Articles may be inserted before their author/name block is hydrated.
+      for (const article of document.querySelectorAll(SEL.SEL_TWEET)) {
+        if (!articles.has(article)) processArticle(article);
+      }
       for (const article of Array.from(articles.keys())) {
         if (!article.isConnected) { articles.delete(article); continue; }
         const author = SEL.extractAuthor(article);
@@ -388,6 +393,10 @@
       }
       if (detail.ok && typeof detail.screen_name === 'string') {
         const key = detail.screen_name.toLowerCase();
+        lookedUp.add(key);
+        // A sweep may have queued this author again while the request ran.
+        const queued = queue.indexOf(key);
+        if (queued !== -1) queue.splice(queued, 1);
         if (mergeUser(key, detail.based_in || null, detail.location || null)) saveCache();
         reRenderAuthor(key);
       } else if (detail.reason === 'query-404') {

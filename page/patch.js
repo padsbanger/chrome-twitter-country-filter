@@ -14,8 +14,14 @@
   if (window.__TCF_PATCHED__) return;
   window.__TCF_PATCHED__ = true;
 
-  const API_MARKER = 'x.com/i/api';
-  const QUERY_ID_RE = /\/i\/api\/graphql\/([A-Za-z0-9]+)\/AboutAccountQuery/;
+  function isApiUrl(value) {
+    try {
+      const url = new URL(value, window.location.href);
+      return /(^|\.)(x\.com|twitter\.com)$/.test(url.hostname) &&
+        url.pathname.startsWith('/i/api/');
+    } catch (e) { return false; }
+  }
+  const QUERY_ID_RE = /\/i\/api\/graphql\/([A-Za-z0-9_-]+)\/AboutAccountQuery/;
   const MAX_DEPTH = 25;
   const MAX_STR = 5000;
   const HEADER_KEYS = ['authorization', 'x-twitter-client-language', 'x-twitter-active-user', 'x-csrf-token'];
@@ -130,7 +136,7 @@
       return;
     }
     if (value.__typename === 'User') {
-      const core = value.core;
+      const core = value.core && value.core.screen_name ? value.core : value.legacy;
       if (core && typeof core === 'object' && typeof core.screen_name === 'string' && core.screen_name) {
         const user = {screen_name: core.screen_name};
         if (typeof core.name === 'string' && core.name) user.name = core.name;
@@ -180,9 +186,10 @@
     try {
       if (typeof input === 'string') url = input;
       else if (input && typeof input.url === 'string') url = input.url;
+      else if (input instanceof URL) url = input.href;
     } catch (e) { /* ignore */ }
     let isApi = false;
-    if (url.indexOf(API_MARKER) !== -1) {
+    if (isApiUrl(url)) {
       isApi = true;
       sniffQueryId(url);
       captureHeaders(collectHeaders(input, init));
@@ -214,7 +221,7 @@
     try {
       this.__tcfUrl = typeof url === 'string' ? url : String(url);
       this.__tcfHeaders = {};
-      if (this.__tcfUrl.indexOf(API_MARKER) !== -1) sniffQueryId(this.__tcfUrl);
+      if (isApiUrl(this.__tcfUrl)) sniffQueryId(this.__tcfUrl);
     } catch (e) { /* ignore */ }
     return realOpen.apply(this, arguments);
   };
@@ -230,7 +237,7 @@
     const xhr = this;
     try {
       const url = xhr.__tcfUrl || '';
-      if (url.indexOf(API_MARKER) !== -1) {
+      if (isApiUrl(url)) {
         // Headers are read after send starts: method/url from open() plus the
         // setRequestHeader() calls recorded per request.
         captureHeaders(xhr.__tcfHeaders || {});
