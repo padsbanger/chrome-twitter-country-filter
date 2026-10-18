@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Twitter Country Filter",
+  "description": "Show each tweet author's country flag and hide tweets from countries you choose.",
+  "version": "1.0.0",
+  "permissions": ["storage"],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_title": "Twitter Country Filter",
+    "default_popup": "popup/popup.html",
+    "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+  },
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "web_accessible_resources": [
+    {
+      "resources": ["data/countries.json", "data/cities.json"],
+      "matches": ["*://*.x.com/*", "*://x.com/*", "*://*.twitter.com/*", "*://twitter.com/*"]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.x.com/*", "*://x.com/*", "*://*.twitter.com/*", "*://twitter.com/*"],
+      "js": ["lib/regions.js", "page/patch.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["*://*.x.com/*", "*://x.com/*", "*://*.twitter.com/*", "*://twitter.com/*"],
+      "js": ["lib/regions.js", "content/selectors.js", "content/content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

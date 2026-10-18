@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Twitter Country Filter</title>
+  <link rel="stylesheet" href="popup.css">
+  <script src="../lib/regions.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Twitter Country Filter</h1>
+    <div id="budget" class="budget">—</div>
+  </header>
+
+  <section class="toggles">
+    <label class="row">
+      <input type="checkbox" id="opt-show-flags" data-setting="showFlags">
+      <span>Show flags</span>
+    </label>
+    <label class="row">
+      <input type="checkbox" id="opt-auto-lookup" data-setting="autoLookup">
+      <span>Auto-lookup missing countries</span>
+    </label>
+    <label class="row">
+      <input type="checkbox" id="opt-hide-unknown" data-setting="hideUnknown">
+      <span>Hide tweets with unknown country</span>
+    </label>
+  </section>
+
+  <input id="search" type="search" placeholder="Search countries…" autocomplete="off">
+
+  <ul id="countries"></ul>
+
+  <footer>
+    <button id="clear-cache" type="button">Clear cached countries</button>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

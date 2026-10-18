@@ -1,0 +1,15 @@
+{
+  "name": "chrome-twitter-country-filter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome/Brave extension: show tweet authors' country flags and filter the timeline by country.",
+  "type": "module",
+  "scripts": {
+    "gen-data": "node tools/gen-data.mjs",
+    "gen-icons": "node tools/gen-icons.mjs",
+    "test": "node --test test/"
+  },
+  "devDependencies": {
+    "world-countries": "^5.1.0"
+  }
+}
